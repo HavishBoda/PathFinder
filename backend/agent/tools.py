@@ -48,14 +48,9 @@ TOOL_DEFINITIONS = [
                     "semester": {
                         "type": "string",
                         "description": "The upcoming semester e.g. Fall 2026"
-                    },
-                    "completed_courses": {
-                        "type": "array",
-                        "items": {"type": "object"},
-                        "description": "List of courses the student has already taken"
                     }
                 },
-                "required": ["semester", "completed_courses"]
+                "required": ["semester"]
             }
         }
     }
@@ -80,8 +75,8 @@ def get_graduation_requirements(major, catalog_year):
         "credits_completed": 12
     }
 
-def get_available_courses(semester, completed_courses):
-    completed_codes = [c["code"] for c in completed_courses]
+def get_available_courses(semester, user_id):
+    completed_codes = [c["code"] for c in get_completed_courses(user_id)]
     all_courses = [
         {"code": "EECS 281", "name": "Data Structures and Algorithms", "credits": 4, "prerequisites": ["EECS 280"], "rating": 4.2, "difficulty": "hard"},
         {"code": "EECS 370", "name": "Computer Organization", "credits": 4, "prerequisites": ["EECS 280"], "rating": 3.8, "difficulty": "medium"},
