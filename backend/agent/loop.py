@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 import os
 from tools import TOOL_DEFINITIONS, get_available_courses, get_completed_courses, get_graduation_requirements
 import json
+from db.sqlite import init_db, get_user, save_user, get_recent_sessions, save_session
 
 load_dotenv()
 
@@ -14,7 +15,12 @@ tool_map = {
     "get_available_courses": get_available_courses,
 }
 
-def run_agent(message, user_profile):
+def run_agent(message, user_profile, user_id):
+    init_db()
+    user = get_user(user_id)
+    if user is None:
+        save_user(user_id, user_profile)
+    
     system_prompt = f"""You are an academic advising agent helping a University of Michigan student plan their courses.
 
 Student profile:
@@ -25,10 +31,15 @@ Student profile:
 
 Your job is to help them figure out what to take next, check graduation requirements, and make a realistic multi-semester plan. Always use your tools to look up real data before making recommendations."""
     
+    user_dict = get_user(user_id)
+    session_history = get_recent_sessions(user_id, 3)
+    
     messages = [
         {"role": "system", "content": system_prompt},
         {"role": "user", "content": message},
     ]
+
+    messages.append(session_history)
 
     while True:
         response = client.chat.completions.create(
@@ -68,7 +79,8 @@ if __name__ == "__main__":
         ]
     }
     result = run_agent(
-        "What courses should I take in Fall 2026?", 
-        test_profile
+        "What courses should I take in Fall 2026?",
+        test_profile,
+        "havish_001"
     )
     print(result)
