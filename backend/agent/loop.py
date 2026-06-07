@@ -31,15 +31,14 @@ Student profile:
 
 Your job is to help them figure out what to take next, check graduation requirements, and make a realistic multi-semester plan. Always use your tools to look up real data before making recommendations."""
     
-    user_dict = get_user(user_id)
     session_history = get_recent_sessions(user_id, 3)
     
-    messages = [
-        {"role": "system", "content": system_prompt},
-        {"role": "user", "content": message},
-    ]
+    messages = [{"role": "system", "content": system_prompt}]
 
-    messages.append(session_history)
+    for session in session_history:
+        messages.extend(session)
+
+    messages.append({"role": "user", "content": message})
 
     while True:
         response = client.chat.completions.create(
@@ -66,6 +65,16 @@ Your job is to help them figure out what to take next, check graduation requirem
         elif response.choices[0].finish_reason == "stop":
             print("\n💬 Final answer:")
             print(response.choices[0].message.content)
+            serializable_messages = []
+            for m in messages:
+                if isinstance(m, dict):
+                    serializable_messages.append(m)
+                else:
+                    serializable_messages.append({
+                        "role": m.role,
+                        "content": m.content
+                    })
+            save_session(user_id, serializable_messages)
             return response.choices[0].message
             
 if __name__ == "__main__":
@@ -79,7 +88,7 @@ if __name__ == "__main__":
         ]
     }
     result = run_agent(
-        "What courses should I take in Fall 2026?",
+        "What did we talk about last time?",
         test_profile,
         "havish_001"
     )
