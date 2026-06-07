@@ -1,7 +1,7 @@
 from groq import Groq
 from dotenv import load_dotenv
 import os
-from tools import TOOL_DEFINITIONS, get_available_courses, get_completed_courses, get_graduation_requirements
+from agent.tools import TOOL_DEFINITIONS, get_available_courses, get_completed_courses, get_graduation_requirements
 import json
 from db.sqlite import init_db, get_user, save_user, get_recent_sessions, save_session
 
